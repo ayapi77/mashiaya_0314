@@ -1,0 +1,5 @@
+{
+  "name": "Aya AI Trade Signal",
+  "description": "A cyber-themed trading dashboard that integrates TradingView charts and news with Dify AI for real-time market analysis.",
+  "requestFramePermissions": []
+}
