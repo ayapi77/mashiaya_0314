@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aya AI Trade Signal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -133,6 +134,52 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    /* Markdown Styles */
+    .markdown-body h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(to right, #00e5ff, #b388ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 10px rgba(179, 136, 255, 0.3);
+    }
+    .markdown-body h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #b388ff, #ff80ab);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 10px rgba(255, 128, 171, 0.3);
+    }
+    .markdown-body strong {
+      color: #00ffcc;
+      font-weight: 600;
+      text-shadow: 0 0 5px rgba(0, 255, 204, 0.4);
+    }
+    .markdown-body ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .markdown-body ol {
+      list-style-type: decimal;
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .markdown-body li {
+      line-height: 1.8;
+      margin-bottom: 0.25rem;
+    }
+    .markdown-body p {
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans text-white">
@@ -184,10 +231,19 @@
         <h2 class="text-xs text-cyber-muted mb-4 font-mono flex items-center gap-2 tracking-widest">
           <span class="text-cyber-blue">■</span> SYSTEM CONFIG
         </h2>
-        <div class="flex gap-3">
+        <div class="flex gap-3" id="api-key-input-group">
           <input type="password" id="apiKey" placeholder="Dify API Key" class="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[#b388ff] text-white font-mono transition-colors">
           <button onclick="saveApiKey()" class="bg-white/5 text-white border border-white/10 hover:bg-[#b388ff]/20 hover:border-[#b388ff]/50 hover:shadow-[0_0_15px_rgba(179,136,255,0.3)] px-6 py-2 rounded-xl text-sm font-medium tracking-wider transition-all duration-300">
             SAVE
+          </button>
+        </div>
+        <div class="hidden gap-3 items-center" id="api-key-saved-group">
+          <div class="flex-1 bg-black/30 border border-[#00e5ff]/30 rounded-xl px-4 py-2 flex items-center gap-3">
+            <span class="w-2 h-2 rounded-full bg-[#00e5ff] shadow-[0_0_8px_rgba(0,229,255,0.6)]"></span>
+            <span class="text-sm font-mono text-[#00e5ff] tracking-wider">Access OK</span>
+          </div>
+          <button onclick="changeApiKey()" class="bg-white/5 text-white border border-white/10 hover:bg-white/20 px-6 py-2 rounded-xl text-sm font-medium tracking-wider transition-all duration-300">
+            CHANGE
           </button>
         </div>
       </div>
@@ -216,7 +272,7 @@
             <input type="radio" name="target" value="Gold" class="radio-btn radio-gold sr-only" onchange="syncFromRadio('OANDA:XAUUSD')">
             <div class="elegant-button rounded-xl p-3 text-center">
               <div class="text-sm font-medium text-white mb-1">Gold</div>
-              <div class="text-[10px] text-cyber-muted font-mono">コモディティ</div>
+              <div class="text-[10px] text-cyber-muted font-mono">ゴールド</div>
             </div>
           </label>
         </div>
@@ -232,25 +288,25 @@
             <div class="absolute top-0 left-0 w-1 h-full aurora-bg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="text-xs font-mono text-cyber-blue mb-1 opacity-70 group-hover:text-[#b388ff] transition-colors">ACTION 01</div>
             <div class="text-sm font-medium text-white mb-1">今日の動向</div>
-            <div class="text-[10px] text-cyber-muted">ノイズ判定</div>
+            <div class="text-[10px] text-cyber-muted">今日はどうなの？</div>
           </button>
           <button onclick="askAI(2)" class="elegant-button rounded-xl p-4 text-left group relative overflow-hidden">
             <div class="absolute top-0 left-0 w-1 h-full aurora-bg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="text-xs font-mono text-cyber-blue mb-1 opacity-70 group-hover:text-[#b388ff] transition-colors">ACTION 02</div>
             <div class="text-sm font-medium text-white mb-1">反発確率の分析</div>
-            <div class="text-[10px] text-cyber-muted">テクニカル視点</div>
+            <div class="text-[10px] text-cyber-muted">今は、買いのチャンス？</div>
           </button>
           <button onclick="askAI(3)" class="elegant-button rounded-xl p-4 text-left group relative overflow-hidden">
             <div class="absolute top-0 left-0 w-1 h-full aurora-bg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="text-xs font-mono text-cyber-blue mb-1 opacity-70 group-hover:text-[#b388ff] transition-colors">ACTION 03</div>
             <div class="text-sm font-medium text-white mb-1">最終判断</div>
-            <div class="text-[10px] text-cyber-muted">ワーストケース</div>
+            <div class="text-[10px] text-cyber-muted">ファイナルアンサー？</div>
           </button>
           <button onclick="askAI(4)" class="elegant-button rounded-xl p-4 text-left group relative overflow-hidden">
             <div class="absolute top-0 left-0 w-1 h-full aurora-bg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div class="text-xs font-mono text-cyber-blue mb-1 opacity-70 group-hover:text-[#b388ff] transition-colors">ACTION 04</div>
             <div class="text-sm font-medium text-white mb-1">実践的リスクヘッジ策</div>
-            <div class="text-[10px] text-cyber-muted">防衛戦略</div>
+            <div class="text-[10px] text-cyber-muted">念の為のリスクヘッジ</div>
           </button>
         </div>
       </div>
@@ -502,21 +558,28 @@ Waiting for user input...</div>
       const savedKey = localStorage.getItem('dify_api_key');
       if (savedKey) {
         document.getElementById('apiKey').value = savedKey;
+        showSavedState();
       }
     });
+
+    function showSavedState() {
+      document.getElementById('api-key-input-group').classList.add('hidden');
+      document.getElementById('api-key-saved-group').classList.remove('hidden');
+      document.getElementById('api-key-saved-group').classList.add('flex');
+    }
+
+    function changeApiKey() {
+      document.getElementById('api-key-saved-group').classList.add('hidden');
+      document.getElementById('api-key-saved-group').classList.remove('flex');
+      document.getElementById('api-key-input-group').classList.remove('hidden');
+      document.getElementById('apiKey').focus();
+    }
 
     function saveApiKey() {
       const key = document.getElementById('apiKey').value.trim();
       if (key) {
         localStorage.setItem('dify_api_key', key);
-        const btn = document.querySelector('button[onclick="saveApiKey()"]');
-        const originalText = btn.innerText;
-        btn.innerText = 'SAVED!';
-        btn.classList.add('aurora-text', 'border-[#b388ff]');
-        setTimeout(() => {
-          btn.innerText = originalText;
-          btn.classList.remove('aurora-text', 'border-[#b388ff]');
-        }, 2000);
+        showSavedState();
       } else {
         alert('APIキーを入力してください。');
       }
@@ -538,8 +601,7 @@ Waiting for user input...</div>
         list.innerHTML = '<div class="text-cyber-muted text-sm font-mono text-center py-10">No logs available.</div>';
       } else {
         chatHistory.forEach((item) => {
-          let formattedAnswer = item.answer.replace(/\*\*(.*?)\*\*/g, '<span class="text-cyber-neon font-bold">$1</span>');
-          formattedAnswer = formattedAnswer.replace(/\n/g, '<br>');
+          const formattedAnswer = marked.parse(item.answer);
 
           list.innerHTML += `
             <div class="bg-black/30 border border-white/5 rounded-xl p-4">
@@ -553,7 +615,7 @@ Waiting for user input...</div>
               </div>
               <div>
                 <div class="text-[#00e5ff] font-mono text-[10px] mb-1">RESPONSE</div>
-                <div class="text-sm text-gray-300 pl-2 border-l border-[#00e5ff]/30">${formattedAnswer}</div>
+                <div class="text-sm text-gray-300 pl-2 border-l border-[#00e5ff]/30 markdown-body">${formattedAnswer}</div>
               </div>
             </div>
           `;
@@ -578,13 +640,26 @@ Waiting for user input...</div>
     }
 
     // --- AI Interaction ---
-    const prompts = {
-      1: "「[ターゲット名]」の現在の急変動の最大の要因は何ですか？数日の短期トレードを前提に、この値動きが『一時的なパニック/熱狂』なのか『トレンドの転換』なのか、市場の温度感を分析して。",
-      2: "数日間の短期トレード目線で、現在の「[ターゲット名]」を分析して。過去の高ボラティリティ相場と比較して、ここから数日内に『自律反発する確率』と『さらに下落する確率』のどちらが高いか推測して。",
-      3: "「[ターゲット名]」に今日エントリーし、数日後に決済する短期トレードを想定します。今取るべきリスクと期待リターンのバランスは適切ですか？考えうる『最悪のシナリオ』を提示し、客観的に評価して。",
-      4: "もし「[ターゲット名]」を今日『買い』でエントリーした場合、数日間の保有中に想定されるリスクを最小限に抑えるための『具体的なリスクヘッジ策（損切りラインや逆相関資産の活用など）』を提案して。"
+    const questionTypes = {
+      1: "type1",
+      2: "type2",
+      3: "type3",
+      4: "type4"
     };
 
+    const tickerMapping = {
+      "S&P500": "SPY",
+      "Nikkei 225": "^N225",
+      "Gold": "GC=F"
+    };
+
+    const intentLabels = {
+      1: "今日の動向分析",
+      2: "勝率予測",
+      3: "買い推奨度と出口戦略",
+      4: "リスクヘッジ策"
+    };
+    
     async function askAI(mode) {
       const apiKey = localStorage.getItem('dify_api_key');
       if (!apiKey) {
@@ -596,9 +671,21 @@ Waiting for user input...</div>
       const targetEl = document.querySelector('input[name="target"]:checked');
       if (!targetEl) return;
       const targetName = targetEl.value;
+      const targetTicker = tickerMapping[targetName] || targetName;
+      const questionType = questionTypes[mode];
+      const intentLabel = intentLabels[mode];
+      
+      // 今日の日付を自動取得してフォーマットする
+      const today = new Date();
+      const currentDateStr = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
 
-      const rawPrompt = prompts[mode];
-      const finalPrompt = rawPrompt.replace(/\[ターゲット名\]/g, targetName);
+      // 画面表示用のクエリ文字列
+      let displayQuery = "";
+      if (mode === 1) {
+        displayQuery = `「${targetName}」について『今日はどうなの？』という視点で分析してください。現在の市場の『パニック/熱狂度』を【0〜100%】で、直近のトレンド（上昇・下降・レンジ等）を明記してください。最大の変動要因を特定し、短期トレード前提でこれが『ノイズ』か『トレンドの初動』か教えて。`;
+      } else {
+        displayQuery = `【${intentLabel}】\n対象: ${targetName} (${targetTicker})`;
+      }
 
       const terminal = document.getElementById('terminal-output');
       
@@ -608,81 +695,141 @@ Waiting for user input...</div>
       // Add user prompt
       const promptDiv = document.createElement('div');
       promptDiv.className = 'mb-4';
-      promptDiv.innerHTML = `<div class="text-[#b388ff] font-mono text-xs mb-1 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-[#b388ff] rounded-full inline-block shadow-[0_0_8px_rgba(179,136,255,0.6)]"></span>USER_QUERY</div><div class="text-white pl-3 border-l border-[#b388ff]/30">${finalPrompt}</div>`;
+      promptDiv.innerHTML = `<div class="text-[#b388ff] font-mono text-xs mb-1 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-[#b388ff] rounded-full inline-block shadow-[0_0_8px_rgba(179,136,255,0.6)]"></span>USER_QUERY</div><div class="text-white pl-3 border-l border-[#b388ff]/30 whitespace-pre-wrap text-sm">${displayQuery}</div>`;
       terminal.appendChild(promptDiv);
 
       // Add loading state
       const loadingDiv = document.createElement('div');
       loadingDiv.className = 'mb-6 text-cyber-neon font-mono text-xs flex items-center';
-      loadingDiv.innerHTML = `<span class="loader"></span> AIが市場を分析中...`;
+      loadingDiv.innerHTML = `<span class="loader"></span> AIが市場を分析中... (ワークフロー実行中)`;
       terminal.appendChild(loadingDiv);
       terminal.scrollTop = terminal.scrollHeight;
 
       try {
-        const response = await fetch('https://api.dify.ai/v1/chat-messages', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            inputs: {},
-            query: finalPrompt,
-            response_mode: "streaming",
-            conversation_id: "",
-            user: "trader-app"
-          })
-        });
+        let fullAnswer = "";
+        let lastError;
+        const maxRetries = 5;
+        
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            if (i > 0) {
+              loadingDiv.innerHTML = `<span class="loader"></span> AIが市場を分析中... (リトライ中 ${i}/${maxRetries-1})`;
+            }
+            
+            const response = await fetch('https://api.dify.ai/v1/workflows/run', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                inputs: {
+                  target_ticker: targetTicker,
+                  question_type: questionType,
+                  current_date: currentDateStr
+                },
+                response_mode: "blocking",
+                user: "trader-aya"
+              })
+            });
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.message || `HTTP ${response.status}`);
+            if (!response.ok) {
+              const errData = await response.json().catch(() => ({}));
+              const msg = errData.message || `HTTP ${response.status}`;
+              throw new Error(msg);
+            }
+            
+            const dataObj = await response.json();
+            
+            // Dify API Level Error
+            if (dataObj.code && dataObj.message) {
+              throw new Error(`API Error: ${dataObj.message}`);
+            }
+
+            // Dify Workflow Execution Error
+            if (dataObj.data && dataObj.data.status === 'failed') {
+              throw new Error(dataObj.data.error || "ワークフローの実行が失敗しました (status: failed)");
+            }
+            
+            let extractedText = "";
+
+            if (dataObj.data && dataObj.data.outputs) {
+              const outputs = dataObj.data.outputs;
+              extractedText = outputs.text || outputs.answer || outputs.result || outputs.output || "";
+              
+              if (!extractedText && typeof outputs === 'object') {
+                const values = Object.values(outputs);
+                const stringValues = values.filter(v => typeof v === 'string' && v.trim() !== '');
+                if (stringValues.length > 0) {
+                  extractedText = stringValues[0];
+                }
+              }
+            } else if (dataObj.data && dataObj.data.error) {
+              throw new Error(dataObj.data.error);
+            }
+
+            // バリデーション
+            let isInvalid = false;
+            let invalidReason = "";
+            if (!extractedText || typeof extractedText !== 'string' || !extractedText.trim()) {
+              isInvalid = true;
+              invalidReason = "応答が空です";
+            } else {
+              const trimmed = extractedText.trim();
+              if (trimmed === '""' || trimmed === "null" || trimmed === "undefined" || trimmed === "{}") {
+                isInvalid = true;
+                invalidReason = "無効な値が返されました";
+              }
+              if (trimmed.includes("現在価格: 不明") || 
+                  trimmed.includes("現在価格：不明") || 
+                  trimmed.includes("現在価格:不明") || 
+                  trimmed.includes("現在価格： 不明")) {
+                isInvalid = true;
+                invalidReason = "データ取得失敗（不明）が含まれています";
+              }
+            }
+
+            if (isInvalid) {
+               console.warn("Invalid response detected:", invalidReason, dataObj);
+               throw new Error(`AIからの応答が不完全です (${invalidReason})`);
+            }
+
+            fullAnswer = extractedText;
+            break;
+          } catch (err) {
+            lastError = err;
+            console.warn(`Dify API connection failed (Attempt ${i + 1}/${maxRetries}):`, err);
+            
+            // UIにリトライ理由を表示
+            loadingDiv.innerHTML = `<span class="loader"></span> AIが市場を分析中... <br><span class="text-[10px] opacity-70 pl-6">リトライ理由: ${err.message} (${i + 1}/${maxRetries})</span>`;
+            
+            if (i === maxRetries - 1) throw lastError;
+            await new Promise(resolve => setTimeout(resolve, 3000)); // リトライ間隔を少し長めに
+          }
         }
 
         terminal.removeChild(loadingDiv);
 
         const answerDiv = document.createElement('div');
         answerDiv.className = 'mb-8';
-        answerDiv.innerHTML = `<div class="text-[#00e5ff] font-mono text-xs mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-[#00e5ff] rounded-full inline-block shadow-[0_0_8px_rgba(0,229,255,0.6)]"></span>AYA_AI_RESPONSE</div><div class="text-gray-200 pl-3 border-l border-[#00e5ff]/30"></div>`;
+        answerDiv.innerHTML = `<div class="text-[#00e5ff] font-mono text-xs mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-[#00e5ff] rounded-full inline-block shadow-[0_0_8px_rgba(0,229,255,0.6)]"></span>AYA_AI_RESPONSE</div>
+        <div class="text-gray-200 pl-3 border-l border-[#00e5ff]/30 markdown-body"></div>`;
         terminal.appendChild(answerDiv);
         
         const contentDiv = answerDiv.querySelector('div:last-child');
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let fullAnswer = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-          
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const dataStr = line.slice(6);
-              if (!dataStr.trim()) continue;
-              try {
-                const dataObj = JSON.parse(dataStr);
-                if (dataObj.event === 'message' || dataObj.event === 'agent_message') {
-                  fullAnswer += dataObj.answer;
-                  let formattedAnswer = fullAnswer.replace(/\*\*(.*?)\*\*/g, '<span class="text-cyber-neon font-bold">$1</span>');
-                  formattedAnswer = formattedAnswer.replace(/\n/g, '<br>');
-                  contentDiv.innerHTML = formattedAnswer;
-                  terminal.scrollTop = terminal.scrollHeight;
-                }
-              } catch (e) {
-                // Ignore parse errors for incomplete chunks
-              }
-            }
-          }
+        try {
+          contentDiv.innerHTML = marked.parse(fullAnswer);
+        } catch (err) {
+          contentDiv.innerHTML = fullAnswer;
         }
+        terminal.scrollTop = terminal.scrollHeight;
 
         // Save to history
         chatHistory.unshift({
           time: new Date().toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }),
           target: targetName,
-          query: finalPrompt,
+          query: displayQuery,
           answer: fullAnswer
         });
         
@@ -698,7 +845,13 @@ Waiting for user input...</div>
         }
         const errorDiv = document.createElement('div');
         errorDiv.className = 'mb-8';
-        errorDiv.innerHTML = `<div class="text-red-500 font-mono text-xs mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-red-500 rounded-full inline-block shadow-[0_0_5px_#ef4444]"></span>SYSTEM_ERROR</div><div class="text-red-400 pl-3 border-l border-red-500/30">通信に失敗しました: ${error.message}<br>APIキーが正しいか、CORS制約に引っかかっていないか確認してください。</div>`;
+        
+        let advice = "APIキーが正しいか、CORS制約に引っかかっていないか確認してください。";
+        if (error.message.includes('429') || error.message.includes('RESOURCE_EXHAUSTED') || error.message.includes('Quota exceeded')) {
+          advice = "【API利用制限（無料枠の上限）に達しました】<br>Dify側で設定しているLLM（Gemini等）の無料枠リクエスト上限に達したため、一時的に利用できません。<br>・エラーメッセージの指示通り、しばらく時間をおいてから再度お試しください。<br>・または、Difyの「モデルプロバイダー」設定から、課金済みのAPIキーを設定するか、別のモデルに変更してください。";
+        }
+
+        errorDiv.innerHTML = `<div class="text-red-500 font-mono text-xs mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 bg-red-500 rounded-full inline-block shadow-[0_0_5px_#ef4444]"></span>SYSTEM_ERROR</div><div class="text-red-400 pl-3 border-l border-red-500/30 text-sm break-words">通信に失敗しました: ${error.message}<br><br><span class="text-yellow-400">${advice}</span></div>`;
         terminal.appendChild(errorDiv);
       }
 
